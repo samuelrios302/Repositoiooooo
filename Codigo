@@ -1,0 +1,214 @@
+from os import system
+from colorama import Fore, init
+from mysql.connector import Error
+import mysql.connector
+from tabulate import tabulate
+
+init(autoreset=True)
+
+try:
+    # Funcion que crea la conexion entre python y MySQL
+    def conexion_base_datos():
+        conexion = mysql.connector.connect(
+            database = 'qd38khfsbnp6rbxj',
+            user='xee3329jefcwlohe',
+            password='wv65i9ks44q6mn0f',
+            host='enqhzd10cxh7hv2e.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
+            port='3306'
+            
+        )
+        return conexion
+
+
+    # Funcion que comprueba la conexion
+    def comprobar_conexion(conexion):
+        if conexion.is_connected():
+            print("\nConexion exitosa a la base de datos!\n")
+
+
+    # Funcion que crea la base de datos
+    def crear_base_datos(cursor):
+        sql = "CREATE SCHEMA ADSO"
+        cursor.execute(sql)
+
+
+    # Funcion que crea tabla
+    def crear_tabla(cursor):
+        sql = "CREATE TABLE tb_aprendices_adso (Identificacion INT, Nombre VARCHAR(25), Apellido VARCHAR(50), Edad INT)"
+        cursor.execute(sql)
+        print("\nTabla Creada!\n")
+
+
+    # Funcion que me permite ingresar registros
+    def insertar_registro(cursor):
+        sql = "INSERT INTO tb_aprendices_adso (Identificacion, Nombre, Apellido, Edad) VALUES (%s, %s, %s, %s)"
+
+        identificacion = ingreso_identificacion()
+        nombre = ingreso_nombres()
+        apellido = ingreso_apellido()
+        edad = ingreso_edad()
+
+        valores = (identificacion, nombre, apellido, edad)
+        cursor.execute(sql, valores)
+        conexion.commit()
+
+        print(f"\n{Fore.GREEN}Registro realizado con exito!\n")
+
+
+    # Funcion que me permite actualizar registros
+    def actualizar_registros(cursor):
+        sql = "UPDATE tb_aprendices_adso SET Nombre = %s, Apellido = %s, Edad = %s  WHERE Identificacion = %s"
+        identificacion = ingreso_identificacion()
+        nombre = ingreso_nombres()
+        apellido = ingreso_apellido()
+        edad = ingreso_edad()
+        valores = (nombre, apellido, edad, identificacion)
+        cursor.execute(sql, valores)
+        conexion.commit()
+        print(f"\n{Fore.GREEN}Actualizacion realizada con exito!")
+
+
+    # Funcion que me permite eliminar registros
+    def eliminar_registros(cursor):
+        print("-"*80)
+        print(f"{Fore.MAGENTA}Eliminar un aprendiz")
+        identificacion = ingreso_identificacion()
+        sql = f"DELETE FROM tb_aprendices_adso WHERE Identificacion = {identificacion}"
+        cursor.execute(sql)
+        conexion.commit()
+        print(f"{Fore.GREEN}\nAprendiz eliminando con exito!")
+
+
+    # Funcion que me permite visualizar un registro completo segun la identificacion
+    def ver_registros(cursor):
+        identificacion = ingreso_identificacion()
+        sql = f"SELECT * FROM tb_aprendices_adso WHERE Identificacion = {identificacion}"
+        cursor.execute(sql)
+
+        resultados = cursor.fetchall()
+
+        print(tabulate(resultados, ("Identificacion", "Nombre", "Apellido", "Edad"), tablefmt='fancy_grid'))
+
+
+    # Funcion que me permite listar todos los registros
+    def ver_todos_registros():
+        sql = "SELECT * FROM tb_aprendices_adso"
+        cursor.execute(sql)
+        resultados = cursor.fetchall()
+        print(tabulate(resultados, ("Identificacion", "Nombre", "Apellido", "Edad"), tablefmt='fancy_grid'))
+
+
+    # Funcion que tiene el menu
+    def menu():
+        try:
+            print("\nMenu de opciones\n")
+            print("A. Agregar un aprendiz")
+            print("B. Actualizar datos de un aprendiz")
+            print("C. Eliminar aprendiz")
+            print("D. Ver datos de un aprendiz")
+            print("E. Listar todos los aprendices")
+            print("F. Salir del menu")
+            opcion = input("\nMi opcion es: ").upper().strip()
+            if opcion not in ('A','B','C','D','E','f'):
+                print('-'*80)
+                print(f"\n{Fore.RED}Opcion incorrecta!")
+                return menu()
+
+            return opcion
+        except ValueError:
+            print('-'*80)
+            print("Tipo de dato invalido!")
+            return menu()
+
+    # Funcion que controla el flujo del programa con eventos
+    def control_flujo():
+        input("\nPresione Enter para continuar")
+        system('cls')
+
+    
+    # Funcion ingreso de la identificacion
+    def ingreso_identificacion():
+        print('-'*80)
+        try:
+            identificacion = int(input("Ingrese la identificacion: "))
+            return identificacion
+        except ValueError:
+            print("-"*80)
+            print("Dato incorrecto!")
+            return ingreso_identificacion()
+
+
+    # Funcion de ingreso del nombre
+    def ingreso_nombres():
+        print('-'*80)
+        nombre = input("Ingrese el nombre: ")
+        return nombre
+
+
+    # Funcion ingreso del apellido
+    def ingreso_apellido():
+        print('-'*80)
+        apellido = input("Ingrese el apellido: ")
+        return apellido
+
+
+    # Funcion ingreso de la edad
+    def ingreso_edad():
+        print('-'*80)
+        try:
+            edad = int(input("Ingrese la edad: "))
+            return edad
+        except ValueError:
+            print("-"*80)
+            print("Dato incorrecto!")
+            return ingreso_edad()
+
+    # Creamos la conexion y verificamos que este bien
+    conexion = conexion_base_datos()
+    comprobar_conexion(conexion)
+    # cursor = conexion.cursor()
+    # crear_tabla(cursor)
+
+    opcion = menu()
+
+    # Bucle principal
+    while opcion != 'F':
+
+        conexion = conexion_base_datos()
+        cursor = conexion.cursor()
+
+        #crear_base_datos(cursor)
+
+
+        if opcion == 'A':
+        
+            insertar_registro(cursor)
+
+            control_flujo()
+        elif opcion == 'B':
+
+            actualizar_registros(cursor)
+
+            control_flujo()
+
+        elif opcion == 'C':
+            eliminar_registros(cursor)
+
+            control_flujo()
+
+        elif opcion == 'D':
+            ver_registros(cursor)
+            control_flujo()
+
+        elif opcion == 'E':
+            ver_todos_registros()
+            control_flujo()
+
+        conexion.close()
+        opcion = menu()
+
+except Error as e:
+    print(f"{Fore.RED}Ha ocurrido un error: {e}")
+
+print("\nEl programa se cerrara!")
+control_flujo()
